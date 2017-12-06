@@ -4,7 +4,8 @@
             speedX: 0,
             speedY: 0,
             width: document.documentElement.clientWidth,
-            height: document.documentElement.clientHeight
+            height: document.documentElement.clientHeight,
+            score: 0,
         },
         init = function () {
             initFastClick();
@@ -21,13 +22,21 @@
             }
 
             function create() {
+                scoreText = game.add.text(16, 16, config.score, {
+                    fontSize: '100px',
+                    fill: '#757676'
+                });
                 ball = game.add.sprite(initX(), initY(), 'ball');
                 game.physics.arcade.enable(ball);
+                ball.body.collideWorldBounds = true;
+                ball.body.collideWorldBounds = true;
+                ball.body.onWorldBounds = new Phaser.Signal();
+                ball.body.onWorldBounds.add(decreaseScore);
             }
 
             function update() {
                 ball.body.velocity.y = (config.speedY * 40);
-                ball.body.velocity.x = (config.speedX * -40clear);
+                ball.body.velocity.x = (config.speedX * -40);
             }
 
             var states = {preload: preload, create: create, update: update};
@@ -94,6 +103,11 @@
 
         printSpeed = function (axis, speed) {
             document.querySelector('#value-speed-' + axis).innerHTML = roundData(speed);
+        },
+
+        decreaseScore = function () {
+            config.score -= 1;
+            scoreText.text = config.score;
         };
 
     if ('addEventListener' in document) {
