@@ -17,8 +17,16 @@
             return Math.round(data * 100) / 100;
         },
 
-
         onSuccess = function (data) {
+            detectShaking(data);
+            showCurrentData(data);
+        },
+
+        detectShaking = function (data) {
+            document.body.className = data.x > 10 || data.y > 10 ? 'shaking' : '';
+        },
+
+        showCurrentData = function (data) {
             printData(data.x, '#value-x', 'X');
             printData(data.y, '#value-y', 'Y');
             printData(data.z, '#value-z', 'Z');
