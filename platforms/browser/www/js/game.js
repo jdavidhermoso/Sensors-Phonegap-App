@@ -1,5 +1,6 @@
 (function () {
-    var config = {
+    var game,
+        config = {
             BALL_DIAMETER: 50,
             speedX: 0,
             speedY: 0,
@@ -19,6 +20,7 @@
 
                 game.stage.backgroundColor = '#f27d0c';
                 game.load.image('ball', 'img/ballsm.png');
+                game.load.image('goal', 'img/goaltop.png');
             }
 
             function create() {
@@ -26,33 +28,42 @@
                     fontSize: '100px',
                     fill: '#757676'
                 });
+
                 ball = game.add.sprite(initX(), initY(), 'ball');
+                goal = game.add.sprite((config.width / 2) - (200 / 2), 0, 'goal');
                 game.physics.arcade.enable(ball);
-                ball.body.collideWorldBounds = true;
+                game.physics.arcade.enable(goal);
                 ball.body.collideWorldBounds = true;
                 ball.body.onWorldBounds = new Phaser.Signal();
-                ball.body.onWorldBounds.add(decreaseScore);
+                ball.body.onWorldBounds.add(function () {
+                    if (ball.position.y === game.world.y) {
+                        ballOut();
+                    }
+                });
             }
 
             function update() {
-                ball.body.velocity.y = (config.speedY * 40);
-                ball.body.velocity.x = (config.speedX * -40);
+                ball.body.velocity.y = (config.speedY * 150);
+                ball.body.velocity.x = (config.speedX * -150);
+
+                game.physics.arcade.overlap(ball, goal, score, null, this);
             }
 
             var states = {preload: preload, create: create, update: update};
-            var game = new Phaser.Game(config.width, config.height, Phaser.CANVAS, 'phaser', states);
+            game = new Phaser.Game(config.width, config.height, Phaser.CANVAS, 'phaser', states);
         },
 
         initX = function () {
-            return getRandomNumber(config.width - config.BALL_DIAMETER);
+            return (config.width / 2) - (config.BALL_DIAMETER / 2);
         },
 
         initY = function () {
-            return getRandomNumber(config.height - config.BALL_DIAMETER);
+            return getRandomNumber(config.height / 2 - config.BALL_DIAMETER, config.height - config.BALL_DIAMETER);
         },
 
         watchSensors = function () {
             function onSuccess(data) {
+                //detectShaking(data);
                 registerDirection(data);
                 showCurrentData(data);
             }
@@ -67,11 +78,11 @@
         registerDirection = function (data) {
             config.speedX = data.x;
             config.speedY = data.y;
-        };
+        },
 
-    getRandomNumber = function (max) {
-        return Math.floor(Math.random() * max);
-    },
+        getRandomNumber = function (min, max) {
+            return Math.floor(Math.random() * max) + min;
+        },
 
         initFastClick = function () {
             FastClick.attach(document.body);
@@ -89,8 +100,10 @@
         roundData = function (data) {
             return Math.round(data * 100) / 100;
         },
-        restart = function () {
-            document.location.reload(true);
+
+        restartBall = function () {
+            ball.position.x = initX();
+            ball.position.y = initY();
         },
 
         showCurrentData = function (data) {
@@ -103,6 +116,21 @@
 
         printSpeed = function (axis, speed) {
             document.querySelector('#value-speed-' + axis).innerHTML = roundData(speed);
+        },
+
+        score = function () {
+            increaseScore();
+            restartBall();
+        },
+
+        ballOut = function() {
+            decreaseScore();
+            restartBall();
+        };
+
+        increaseScore = function () {
+            config.score += 1;
+            scoreText.text = config.score;
         },
 
         decreaseScore = function () {

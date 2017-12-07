@@ -11,6 +11,12 @@ body.shaking {
     background-color: #800909;
 }
 
+#phaser {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
 .reader {
     background-color: #f27d0c;
     color: #800909;
