@@ -4,21 +4,18 @@ body {
     font-size: 18px;
     font-family: "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", Sans-serif;
     font-weight: 300;
-    background-color: #fdcf58;
-}
-
-body.shaking {
-    background-color: #800909;
+    background-color: #17aa40;
 }
 
 #phaser {
     position: absolute;
+    width: 100%;
+    height: 100%;
     top: 0;
     left: 0;
 }
 
 .reader {
-    background-color: #f27d0c;
     color: #800909;
     width: 50%;
     padding: 30px;

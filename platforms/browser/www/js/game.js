@@ -1,12 +1,15 @@
 (function () {
     var game,
+        graphics,
         config = {
+            level: 0,
             BALL_DIAMETER: 50,
             speedX: 0,
             speedY: 0,
             width: document.documentElement.clientWidth,
             height: document.documentElement.clientHeight,
             score: 0,
+            ballSpeed: 50
         },
         init = function () {
             initFastClick();
@@ -18,7 +21,7 @@
             function preload() {
                 game.physics.startSystem(Phaser.Physics.ARCADE);
 
-                game.stage.backgroundColor = '#f27d0c';
+                game.stage.backgroundColor = '#17aa40';
                 game.load.image('ball', 'img/ballsm.png');
                 game.load.image('goal', 'img/goaltop.png');
             }
@@ -33,24 +36,46 @@
                 goal = game.add.sprite((config.width / 2) - (200 / 2), 0, 'goal');
                 game.physics.arcade.enable(ball);
                 game.physics.arcade.enable(goal);
+
+                drawGoalLine();
+
                 ball.body.collideWorldBounds = true;
                 ball.body.onWorldBounds = new Phaser.Signal();
                 ball.body.onWorldBounds.add(function () {
-                    if (ball.position.y === game.world.y) {
+                    if (isBallOut()) {
                         ballOut();
                     }
                 });
             }
 
             function update() {
-                ball.body.velocity.y = (config.speedY * 150);
-                ball.body.velocity.x = (config.speedX * -150);
+                var speedLevel = (config.ballSpeed + (config.level * 5));
+
+                ball.body.velocity.y = (config.speedY * speedLevel);
+                ball.body.velocity.x = (config.speedX * (-1 * speedLevel));
 
                 game.physics.arcade.overlap(ball, goal, score, null, this);
             }
 
+
             var states = {preload: preload, create: create, update: update};
             game = new Phaser.Game(config.width, config.height, Phaser.CANVAS, 'phaser', states);
+        },
+
+        isBallOut = function () {
+            var lineStartY = line.start.y;
+            return ball.position.y - (config.BALL_DIAMETER / 2) < lineStartY;
+        },
+
+        drawGoalLine = function () {
+            graphics = game.add.graphics(0, 0),
+                goalBottom = goal.position.y + goal.height - 5;
+            line = new Phaser.Line(0, goalBottom, config.width, goalBottom);
+            graphics.lineStyle(5, 0xffffff, 1);
+            graphics.moveTo(line.start.x, line.start.y);
+            graphics.lineTo(line.end.x, line.end.y);
+            graphics.endFill();
+
         },
 
         initX = function () {
@@ -63,7 +88,6 @@
 
         watchSensors = function () {
             function onSuccess(data) {
-                //detectShaking(data);
                 registerDirection(data);
                 showCurrentData(data);
             }
@@ -91,12 +115,6 @@
         printData = function (data, element, axis) {
             document.querySelector(element).innerHTML = axis + ': ' + roundData(data);
         },
-        detectShaking = function (data) {
-            document.body.className = data.x > 10 || data.y > 10 ? 'shaking' : '';
-            if (data.x > 10 || data.y > 10) {
-                setTimeout(restart, 1000);
-            }
-        },
         roundData = function (data) {
             return Math.round(data * 100) / 100;
         },
@@ -123,14 +141,15 @@
             restartBall();
         },
 
-        ballOut = function() {
+        ballOut = function () {
             decreaseScore();
             restartBall();
-        };
+        },
 
         increaseScore = function () {
             config.score += 1;
             scoreText.text = config.score;
+            config.level += 1;
         },
 
         decreaseScore = function () {
